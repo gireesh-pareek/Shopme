@@ -10,9 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.annotation.Rollback;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -85,7 +83,14 @@ public class UserRepositoryTest {
 
     @Test
     public void testDeleteUserById(){
-        Integer userId = 2;
-        userRepository.deleteById(2);
+        Integer userId = 9;
+        userRepository.deleteById(userId);
+    }
+
+    @Test
+    public void testGetUserByEmail(){
+        String email = "firstnamegireeshpareek@rocketmail.com";
+        User user = userRepository.findByEmail(email);
+        assertThat(user).isNotNull();
     }
 }
