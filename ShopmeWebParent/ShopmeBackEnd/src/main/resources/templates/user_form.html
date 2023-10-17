@@ -3,7 +3,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-    <title>Create New User</title>
+    <title>[[${pageTitle}]]</title>
     <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
     <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
     <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
@@ -58,9 +58,12 @@
         </nav>
     </div>
     <div>
-        <h1>Manage Users | Create New user</h1>
+        <h1>Manage Users | [[${pageTitle}]]</h1>
     </div>
-        <form th:action="@{/users/save}" method="post" style="max-width: 700px; margin: 0 auto" th:object="${user}" onsubmit="return checkEmailUnique(this);">
+        <form th:action="@{/users/save}" method="post" style="max-width: 700px; margin: 0 auto"
+              enctype="multipart/form-data"
+              th:object="${user}" onsubmit="return checkEmailUnique(this);">
+            <input type="hidden" th:field="*{id}">
             <div class="border border-secondary rounded p-3">
                 <div class="form-group row">
                     <label class="col-sm-4 col-form-label">E-mail:</label>
@@ -83,7 +86,8 @@
                 <div class="form-group row">
                     <label class="col-sm-4 col-form-label">Password:</label>
                     <div class="col-sm-8">
-                        <input type="password" class="form-control" th:field="*{password}" required minlength="8" maxlength="20"/>
+                        <input th:if="${user.id == null}" type="password" class="form-control" th:field="*{password}" required minlength="8" maxlength="20"/>
+                        <input th:if="${user.id != null}" type="password" class="form-control" th:field="*{password}" minlength="8" maxlength="20"/>
                     </div>
                 </div>
                 <div class="form-group row">
@@ -100,6 +104,13 @@
                     <label class="col-sm-4 col-form-label">Enabled:</label>
                     <div class="col-sm-8">
                         <input type="checkbox" th:field="*{enabled}"/>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-4 col-form-label">Photos:</label>
+                    <div class="col-sm-8">
+                        <input type="file" id="fileImage" name="image" accept="image/png, image/jpeg" class="mb-2" />
+                        <img id="thumbnail" alt="Photos preview" th:src="@{/images/default-user.png}" class="img-fluid"/>
                     </div>
                 </div>
                 <div class="text-center">
@@ -134,13 +145,36 @@
         $("#buttonCancel").on("click", function(){
             window.location = "[[@{/users}]]";
         });
+
+        $("#fileImage").change(function() {
+            fileSize = this.files[0].size;
+            alert("File size : " + fileSize);
+
+            if(fileSize > 1048576) {
+                this.setCustomValidity("You must choose an image less than 1 MB!");
+                this.reportValidity();
+            }else {
+                this.setCustomValidity("");
+                showImageThumbnail(this);
+            }
+        });
     });
+
+    function showImageThumbnail(fileInput) {
+        var file = fileInput.files[0];
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            $("#thumbnail").attr("src", e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
 
     function checkEmailUnique(form){
         url = "[[@{/users/check_email}]]";
         userEmail = $("#email").val();
+        userId = $("#id").val();
         csrfValue = $("input[name='_csrf']").val();
-        params = {email: userEmail, _csrf: csrfValue};
+        params = {id: userId, email: userEmail, _csrf: csrfValue};
 
         $.post(url, params, function(response) {
             if(response == "OK"){
