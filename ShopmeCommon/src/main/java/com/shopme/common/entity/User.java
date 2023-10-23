@@ -24,7 +24,7 @@ public class User {
     private boolean enabled;
     @ManyToMany
     @JoinTable(
-            name = "users_role",
+            name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
@@ -122,7 +122,7 @@ public class User {
     @Transient
     public String getPhotosImagePath(){
         if(id == null || photos == null){
-            return "/images/default-image.png";
+            return "/images/default-user.png";
         }
         return "/user-photos/" + this.id + "/" + this.photos;
     }

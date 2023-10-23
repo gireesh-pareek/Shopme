@@ -4,6 +4,9 @@ import com.shopme.common.entity.Role;
 import com.shopme.common.entity.User;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,8 @@ import java.util.NoSuchElementException;
 @Service
 @Transactional
 public class UserService {
+
+    public static final int USERS_PER_PAGE = 4;
     @Autowired
     private UserRepository userRepository;
 
@@ -22,68 +27,72 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public List<User> getAllUsers(){
+    public List<User> getAllUsers() {
         return (List<User>) userRepository.findAll();
     }
 
-    public List<Role> getAllRoles(){
+    public Page<User> listByPage(int pageNum) {
+        Pageable pageable = PageRequest.of(pageNum-1, USERS_PER_PAGE);
+        return userRepository.findAll(pageable);
+    }
+
+    public List<Role> getAllRoles() {
         return (List<Role>) roleRepository.findAll();
     }
 
     public User save(User user) {
         boolean isUpdatingUser = (user.getId() != null);
-        if(isUpdatingUser){
+        if (isUpdatingUser) {
             User existingUser = userRepository.findById(user.getId()).get();
-            if(user.getPassword().isEmpty()){
+            if (user.getPassword().isEmpty()) {
                 user.setPassword(existingUser.getPassword());
-            }else {
+            } else {
                 encodePassword(user);
             }
-        }else {
+        } else {
             encodePassword(user);
         }
         return userRepository.save(user);
     }
 
-    private void encodePassword(User user){
+    private void encodePassword(User user) {
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
     }
 
-    public boolean isEmailUnique(Integer id, String email){
+    public boolean isEmailUnique(Integer id, String email) {
         User userByEmail = userRepository.findByEmail(email);
-        if(userByEmail == null) return true;
+        if (userByEmail == null) return true;
         boolean isCreatingNew = (id == null);
-        if(isCreatingNew){
-            if(userByEmail != null) return false;
-        }
-        else {
-            if(userByEmail.getId() != id){
+        if (isCreatingNew) {
+            if (userByEmail != null) return false;
+        } else {
+            if (userByEmail.getId() != id) {
                 return false;
             }
         }
         return true;
     }
 
-    public User getUserById(Integer userId) throws UserNotFoundException{
-        try{
+    public User getUserById(Integer userId) throws UserNotFoundException {
+        try {
             return userRepository.findById(userId).get();
-        }catch (NoSuchElementException e){
-            throw new UserNotFoundException("Could not find any user with ID "+ userId);
+        } catch (NoSuchElementException e) {
+            throw new UserNotFoundException("Could not find any user with ID " + userId);
         }
     }
 
-    public void deleteUserById(Integer id) throws UserNotFoundException{
+    public void deleteUserById(Integer id) throws UserNotFoundException {
         Long countById = userRepository.countById(id);
 
-        if(countById == null || countById == 0){
-            throw new UserNotFoundException("Could not find any user with ID "+ id);
+        if (countById == null || countById == 0) {
+            throw new UserNotFoundException("Could not find any user with ID " + id);
         }
 
         userRepository.deleteById(id);
     }
 
-    public void updateUserEnabledStatus(Integer id, boolean enabled){
+    public void updateUserEnabledStatus(Integer id, boolean enabled) {
         userRepository.updateEnabledStatus(id, enabled);
     }
 }

@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.annotation.Rollback;
 
 import java.util.ArrayList;
@@ -22,8 +25,9 @@ public class UserRepositoryTest {
     private UserRepository userRepository;
     @Autowired
     private TestEntityManager entityManager;
+
     @Test
-    public void testCreateUserWithOneRole(){
+    public void testCreateUserWithOneRole() {
         Role roleAdmin = entityManager.find(Role.class, 1);
         User userGireesh = new User("pareekg008@gmail.com", "password", "Gireesh", "Pareek");
         userGireesh.addRole(roleAdmin);
@@ -33,10 +37,10 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testCreateUserWithTwoRoles(){
+    public void testCreateUserWithTwoRoles() {
         User userGopal = new User("gopalpareek960@gmail.com", "password", "Gopal", "Pareek");
         Role roleEditor = new Role(3);
-        Role roleAssistant= new Role(5);
+        Role roleAssistant = new Role(5);
         userGopal.addRole(roleEditor);
         userGopal.addRole(roleAssistant);
 
@@ -45,22 +49,24 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testListAllUsers(){
-        Iterable<User> users= userRepository.findAll();
+    public void testListAllUsers() {
+        Iterable<User> users = userRepository.findAll();
         List<User> usersList = new ArrayList<>();
         users.forEach(usersList::add);
-        usersList.forEach(user -> {System.out.println(user);});
+        usersList.forEach(user -> {
+            System.out.println(user);
+        });
         assertThat(usersList.size()).isGreaterThan(0);
     }
 
     @Test
-    public void testGetUserById(){
+    public void testGetUserById() {
         User fetchedUser = userRepository.findById(1).get();
         assertThat(fetchedUser).isNotNull();
     }
 
     @Test
-    public void testUpdateUserDetails(){
+    public void testUpdateUserDetails() {
         User user = userRepository.findById(1).get();
         user.setEnabled(true);
         user.setEmail("firstnamegireeshpareek@rocketmail.com");
@@ -70,7 +76,7 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testUpdateUserRoles(){
+    public void testUpdateUserRoles() {
         User user = userRepository.findById(2).get();
         Role roleEditor = new Role(3);
         Role salesPerson = new Role(2);
@@ -82,34 +88,46 @@ public class UserRepositoryTest {
     }
 
     @Test
-    public void testDeleteUserById(){
+    public void testDeleteUserById() {
         Integer userId = 9;
         userRepository.deleteById(userId);
     }
 
     @Test
-    public void testGetUserByEmail(){
+    public void testGetUserByEmail() {
         String email = "firstnamegireeshpareek@rocketmail.com";
         User user = userRepository.findByEmail(email);
         assertThat(user).isNotNull();
     }
 
     @Test
-    public void testCountById(){
+    public void testCountById() {
         Integer id = 1;
         Long countById = userRepository.countById(id);
         assertThat(countById).isNotNull().isGreaterThan(0);
     }
 
     @Test
-    public void testDisableUser(){
+    public void testDisableUser() {
         Integer id = 1;
         userRepository.updateEnabledStatus(id, false);
     }
 
     @Test
-    public void testEnableUser(){
+    public void testEnableUser() {
         Integer id = 1;
         userRepository.updateEnabledStatus(id, true);
+    }
+
+    @Test
+    public void testListFirstPage(){
+        int pageNumber = 0;
+        int pageSize = 4;
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        Page<User> page = userRepository.findAll(pageable);
+
+        List<User> userList = page.getContent();
+        userList.forEach(user -> System.out.println(user));
+        assertThat(userList.size()).isEqualTo(pageSize);
     }
 }
