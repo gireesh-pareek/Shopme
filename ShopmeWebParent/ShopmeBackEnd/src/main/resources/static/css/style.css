@@ -21,3 +21,8 @@
     div.less-details {display: none}
     .hideable-column {display: table-cell;}
 }
+
+.header{
+    padding-right: 0px;
+    padding-left: 0px;
+}
