@@ -48,6 +48,11 @@ public class WebSecurityConfig {
                 )
                 .logout(logout -> logout
                         .permitAll()
+                )
+                .rememberMe(rememberMe -> rememberMe
+                        .key("asjdfgasdhfkhdckwhedfoi_152E432136")
+                        .tokenValiditySeconds(7*24*60*60)
+                        .userDetailsService(userDetailsService())
                 );
 
         return http.build();
