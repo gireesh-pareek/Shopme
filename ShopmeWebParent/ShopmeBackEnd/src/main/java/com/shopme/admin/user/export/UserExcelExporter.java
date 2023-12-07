@@ -1,6 +1,5 @@
 package com.shopme.admin.user.export;
 
-import com.shopme.admin.user.AbstractExporter;
 import com.shopme.common.entity.User;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
